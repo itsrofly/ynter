@@ -1,0 +1,159 @@
+{
+  "name": "ynter",
+  "version": "1.0.0",
+  "description": "Ynter App",
+  "main": "./out/main/index.js",
+  "author": "Ynter.co",
+  "license": "UNLICENSED",
+  "private": true,
+  "homepage": "./",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev",
+    "build": "npm run typecheck && electron-vite build",
+    "postinstall": "electron-builder install-app-deps",
+    "minify:win": "powershell -Command \"Get-ChildItem -Path '.\\out' -Recurse -File | Where-Object { $_.Name -like '*.js*' -and $_.Name -notlike '*jsc*' -and $_.Name -notlike '*map*' } | ForEach-Object { uglifyjs $_.FullName -o $_.FullName -c -m --toplevel --v8 }\"",
+    "minify": "find ./out -type f -name '*.js' ! -name '*jsc*' ! -name '*map*' -exec uglifyjs {} -o {} -c -m --toplevel --v8 \\;",
+    "build:unpack": "modclean --run --patterns=default:safe && npm run build && electron-builder --dir",
+    "build:win:cross": "modclean --run --patterns=default:safe && npm run build && npm run minify:win && electron-builder --win --linux tar.xz",
+    "build:win": "modclean --run --patterns=default:safe && npm run build && npm run minify:win && electron-builder --win",
+    "build:mac:cross": "modclean --run --patterns=default:safe && npm run build && npm run minify && electron-builder --mac --linux tar.xz",
+    "build:mac": "modclean --run --patterns=default:safe && electron-vite build && npm run minify && electron-builder --mac",
+    "build:linux": "modclean --run --patterns=default:safe && electron-vite build && electron-builder --linux tar.xz"
+  },
+  "dependencies": {
+    "@editorjs/checklist": "^1.6.0",
+    "@editorjs/editorjs": "^2.30.5",
+    "@editorjs/header": "^2.8.7",
+    "@editorjs/list": "^1.10.0",
+    "@editorjs/marker": "^1.4.0",
+    "@editorjs/quote": "^2.7.0",
+    "@editorjs/simple-image": "^1.6.0",
+    "@editorjs/underline": "^1.1.0",
+    "@electron-toolkit/preload": "^3.0.1",
+    "@electron-toolkit/utils": "^3.0.0",
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^5.16.7",
+    "@mui/material": "^5.16.7",
+    "@mui/x-date-pickers": "^7.12.1",
+    "@sentry/electron": "^5.4.0",
+    "@sentry/vite-plugin": "^2.22.2",
+    "@sotaproject/strikethrough": "^1.0.1",
+    "@supabase/supabase-js": "^2.45.1",
+    "custom-electron-titlebar": "^4.2.8",
+    "dayjs": "^1.11.12",
+    "dompurify": "^3.1.6",
+    "knex": "^3.1.0",
+    "marked": "^14.0.0",
+    "pdf-parse": "^1.1.1",
+    "react-router-dom": "^6.26.0",
+    "recharts": "^2.12.7",
+    "sqlite3": "^5.1.7",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "@electron-toolkit/eslint-config-prettier": "^2.0.0",
+    "@electron-toolkit/eslint-config-ts": "^2.0.0",
+    "@electron-toolkit/tsconfig": "^1.0.1",
+    "@types/node": "^20.14.8",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "electron": "^31.0.2",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.3",
+    "prettier": "^3.3.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.5.2",
+    "vite": "^5.3.1"
+  },
+  "build": {
+    "appId": "app.ynter.co",
+    "compression": "maximum",
+    "copyright": "Copyright © 2024 ynter",
+    "productName": "Ynter",
+    "directories": {
+      "buildResources": "build"
+    },
+    "files": [
+      "!**/.vscode/*",
+      "!src/*",
+      "!electron.vite.config.{js,ts,mjs,cjs}",
+      "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md,electron.afterpack.js}",
+      "!{.env,.env.*,.npmrc,pnpm-lock.yaml}",
+      "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}",
+      "!**/fonts/*"
+    ],
+    "win": {
+      "publisherName": "Ynter",
+      "executableName": "Ynter",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${name}-${version}-${arch}.${ext}",
+      "shortcutName": "${productName}",
+      "createDesktopShortcut": "always",
+      "uninstallDisplayName": "Ynter",
+      "include": "build/uninstaller.nsh"
+    },
+    "mac": {
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": false,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "artifactName": "${name}-${version}-${arch}.${ext}",
+      "title": "${productName}",
+      "icon": "build/icon.icns"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "snap",
+          "arch": "x64"
+        }
+      ],
+      "maintainer": "ynter.co",
+      "category": "Utility"
+    },
+    "snap": {
+      "artifactName": "${name}-${version}-${arch}.${ext}"
+    },
+    "npmRebuild": false,
+    "publish": {
+      "provider": "generic",
+      "url": "https://example.com/auto-updates"
+    },
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/"
+    }
+  }
+}
